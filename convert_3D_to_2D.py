@@ -1,4 +1,5 @@
 import os
+import shutil
 from argparse import ArgumentParser
 from os.path import join, split
 import numpy as np
@@ -13,8 +14,12 @@ parser.add_argument("--output", default="datasets/two_d/CT/coronary")
 
 
 def process(filepath):
-    output_dir_path = join(args.output, split(filepath)[-1].replace(".nii.gz", ""))
+    filename = split(filepath)[-1].replace(".nii.gz", "")
+    output_dir_path = join(args.output, filename)
     os.system(f"med2image -i {filepath} -d {output_dir_path}")
+    for index, img_path in enumerate(DirUtils.list_dir_full_path(output_dir_path, interest_extensions=".jpg")):
+        shutil.move(img_path, join(args.output, f"{filename}_{index:04}.jpg"))
+    shutil.rmtree(output_dir_path)
 
 
 if __name__ == '__main__':
