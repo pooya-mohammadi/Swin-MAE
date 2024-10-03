@@ -43,7 +43,7 @@ class SwinMAE(nn.Module):
         self.pos_embed = nn.Parameter(torch.zeros(1, self.num_patches, embed_dim), requires_grad=False)
         self.mask_token = nn.Parameter(torch.zeros(1, 1, embed_dim))
         self.layers = self.build_layers()
-       
+
         self.first_patch_expanding = PatchExpanding(dim=decoder_embed_dim, norm_layer=norm_layer)
         self.layers_up = self.build_layers_up()
         self.norm_up = norm_layer(embed_dim)
@@ -54,7 +54,7 @@ class SwinMAE(nn.Module):
     def initialize_weights(self):
         pos_embed = get_2d_sincos_pos_embed(self.pos_embed.shape[-1], int(self.num_patches ** .5), cls_token=False)
         self.pos_embed.data.copy_(torch.from_numpy(pos_embed).float().unsqueeze(0))
-       
+
         torch.nn.init.normal_(self.mask_token, std=.02)
 
         self.apply(self._init_weights)
@@ -62,7 +62,7 @@ class SwinMAE(nn.Module):
     @staticmethod
     def _init_weights(m):
         if isinstance(m, nn.Linear):
-           
+
             torch.nn.init.xavier_uniform_(m.weight)
             if isinstance(m, nn.Linear) and m.bias is not None:
                 nn.init.constant_(m.bias, 0)
@@ -132,8 +132,8 @@ class SwinMAE(nn.Module):
                     continue
                 index_keep = torch.cat([index_keep, index_keep_part + int(L ** 0.5) * i + j], dim=1)
 
-        index_all = np.expand_dims(range(L), axis=0).repeat(B, axis=0) 
-        index_mask = np.zeros([B, int(L - index_keep.shape[-1])], dtype=np.int) 
+        index_all = np.expand_dims(range(L), axis=0).repeat(B, axis=0)
+        index_mask = np.zeros([B, int(L - index_keep.shape[-1])], dtype=np.int32)
         for i in range(B):
             index_mask[i] = np.setdiff1d(index_all[i], index_keep.cpu().numpy()[i], assume_unique=True)
         index_mask = torch.tensor(index_mask, device=x.device)
@@ -182,7 +182,7 @@ class SwinMAE(nn.Module):
 
     def build_layers_up(self):
         layers_up = nn.ModuleList()
-        for i in range(self.num_layers - 1): 
+        for i in range(self.num_layers - 1):
             layer = BasicBlockUp(
                 index=i,
                 depths=self.depths,
@@ -210,7 +210,7 @@ class SwinMAE(nn.Module):
         return x, mask
 
     def forward_decoder(self, x):
-       
+
         x = self.first_patch_expanding(x)
 
         for layer in self.layers_up:
@@ -237,9 +237,9 @@ class SwinMAE(nn.Module):
             target = (target - mean) / (var + 1.e-6) ** .5
 
         loss = (pred - target) ** 2
-        loss = loss.mean(dim=-1) 
+        loss = loss.mean(dim=-1)  # get the mean over all the features(48) of each patch
 
-        loss = (loss * mask).sum() / mask.sum() 
+        loss = (loss * mask).sum() / mask.sum()  # Only the ones that are masked are considered not the original ones!
         return loss
 
     def forward(self, x):

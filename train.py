@@ -26,7 +26,7 @@ def get_args_parser():
     parser.add_argument('--save_freq', default=400, type=int)
     parser.add_argument('--checkpoint_encoder', default='', type=str)
     parser.add_argument('--checkpoint_decoder', default='', type=str)
-    parser.add_argument('--data_path', default=r'C:\文件\数据集\腮腺对比学习数据集\三通道合并\concat\train', type=str)  # fill in the dataset path here
+    parser.add_argument('--data_path', default=r'./datasets/two_d/CT/coronary', type=str)
     parser.add_argument('--mask_ratio', default=0.75, type=float,
                         help='Masking ratio (percentage of removed patches).')
 
@@ -89,7 +89,8 @@ def main(args):
     dataset_train = datasets.ImageFolder(args.data_path, transform=transform_train)
     sampler_train = torch.utils.data.RandomSampler(dataset_train)
     data_loader_train = torch.utils.data.DataLoader(
-        dataset_train, sampler=sampler_train,
+        dataset_train,
+        sampler=sampler_train,
         batch_size=args.batch_size,
         num_workers=args.num_workers,
         pin_memory=args.pin_mem,
@@ -104,7 +105,7 @@ def main(args):
         log_writer = None
 
     # Set model
-    model = swin_mae.__dict__[args.model](norm_pix_loss=args.norm_pix_loss, mask_ratio=args.mask_ratio)
+    model = swin_mae.swin_mae(norm_pix_loss=args.norm_pix_loss, mask_ratio=args.mask_ratio)
     model.to(device)
     model_without_ddp = model
 

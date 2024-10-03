@@ -6,13 +6,16 @@ import torch
 import utils.misc as misc
 import utils.lr_sched as lr_sched
 
-
-def train_one_epoch(model: torch.nn.Module,
-                    data_loader, optimizer: torch.optim.Optimizer,
-                    device: torch.device, epoch: int, loss_scaler,
+from swin_mae import SwinMAE
+def train_one_epoch(model: SwinMAE,
+                    data_loader: torch.utils.data.DataLoader,
+                    optimizer: torch.optim.Optimizer,
+                    device: torch.device,
+                    epoch: int,
+                    loss_scaler,
                     log_writer=None,
                     args=None):
-    model.train(True)
+    model.train()
     metric_logger = misc.MetricLogger(delimiter="  ")
     metric_logger.add_meter('lr', misc.SmoothedValue(window_size=1, fmt='{value:.6f}'))
     header = 'Epoch: [{}]'.format(epoch)
