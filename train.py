@@ -26,7 +26,7 @@ def get_args_parser():
     parser.add_argument('--save_freq', default=400, type=int)
     parser.add_argument('--checkpoint_encoder', default='', type=str)
     parser.add_argument('--checkpoint_decoder', default='', type=str)
-    parser.add_argument('--data_path', default=r'./datasets/two_d/CT/coronary', type=str)
+    parser.add_argument('--data_path', default="", type=str)
     parser.add_argument('--mask_ratio', default=0.75, type=float,
                         help='Masking ratio (percentage of removed patches).')
 
