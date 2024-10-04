@@ -43,7 +43,7 @@ if __name__ == '__main__':
     print(len(labels), len(images))
 
     # Remove images that don't have the same shape as label
-
+    n = 0
     for img_key, img_value in tqdm(images.items(), desc="Removing non consistent shapes"):
         label_value = labels[img_key]
         label = np.load(label_value)['arr_0']
@@ -51,6 +51,7 @@ if __name__ == '__main__':
         if image.shape != label.shape:
             os.remove(img_value)
             os.remove(label_value)
+            n += 1
 
     images = DirUtils.list_dir_full_path(args.input_img, interest_extensions=".jpg", return_dict=True)
     labels = DirUtils.list_dir_full_path(args.input_seg, interest_extensions=".npz", return_dict=True)
