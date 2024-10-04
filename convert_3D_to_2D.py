@@ -13,6 +13,7 @@ parser = ArgumentParser()
 parser.add_argument("--input", default="datasets/CT/coronary")
 parser.add_argument("--output", default="datasets/two_d/CT/coronary")
 parser.add_argument("--save_npz", action="store_true")
+parser.add_argument("--n", default=None, type=int)
 
 
 def previous_codes():
@@ -60,4 +61,4 @@ if __name__ == '__main__':
     args = parser.parse_args()
     DirUtils.remove_create(args.output)
     Parallel(n_jobs=os.cpu_count() - 3)(delayed(process)(filepath, args.save_npz) for filepath in
-                                        tqdm(DirUtils.list_dir_full_path(args.input, interest_extensions=".gz")))
+                                        tqdm(DirUtils.list_dir_full_path(args.input, interest_extensions=".gz")[:args.n]))
