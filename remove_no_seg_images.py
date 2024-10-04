@@ -12,7 +12,6 @@ from deep_utils import NIBUtils
 parser = ArgumentParser()
 parser.add_argument("--input_img", default="/home/aicvi/projects/Swin-MAE-datasets/images/ct_coronary/")
 parser.add_argument("--input_seg", default="/home/aicvi/projects/Swin-MAE-datasets/labels/ct_coronary/")
-parser.add_argument("--save_npz", action="store_true")
 
 args = parser.parse_args()
 
@@ -33,7 +32,7 @@ if __name__ == '__main__':
     labels = DirUtils.list_dir_full_path(args.input_seg, interest_extensions=".npz", return_dict=True)
     labels = check_seg(labels)
     n = 0
-    for i_k, i_v in images.items():
+    for i_k, i_v in tqdm(images.items(), desc="Removing non existing images"):
         if i_k not in labels:
             os.remove(i_v)
             n += 1
@@ -43,7 +42,19 @@ if __name__ == '__main__':
     print(f"Removed {n} samples")
     print(len(labels), len(images))
 
-# python convert_3D_to_2D.py --input /media/aicvi/11111bdb-a0c7-4342-9791-36af7eb70fc0/narco_desktop/china_seg/ --output /home/aicvi/projects/Swin-MAE-datasets/labels/ct_coronary --save_npz --n 10
-# python convert_3D_to_2D.py --input /media/aicvi/11111bdb-a0c7-4342-9791-36af7eb70fc0/narco_desktop/china/ --output /home/aicvi/projects/Swin-MAE-datasets/images/ct_coronary --n 10
-# python convert_3D_to_2D.py --input /media/aicvi/11111bdb-a0c7-4342-9791-36af7eb70fc0/NNUNET_OUTPUT/nnunet_raw/Dataset001_mm/imagesTr --output /home/aicvi/projects/Swin-MAE-datasets/images/mri_mm --n 100
-# python convert_3D_to_2D.py --input /media/aicvi/11111bdb-a0c7-4342-9791-36af7eb70fc0/NNUNET_OUTPUT/nnunet_raw/Dataset001_mm/labelsTr --output /home/aicvi/projects/Swin-MAE-datasets/labels/mri_mm --save_npz --n 100
+    # Remove images that don't have the same shape as label
+
+    for img_key, img_value in tqdm(images.items(), desc="Removing non consistent shapes"):
+        label_value = labels[img_key]
+        label = np.load(label_value)['arr_0']
+        image = np.array(Image.open(img_value))[:, :, 2]
+        if image.shape != label.shape:
+            os.remove(img_value)
+            os.remove(label_value)
+
+    images = DirUtils.list_dir_full_path(args.input_img, interest_extensions=".jpg", return_dict=True)
+    labels = DirUtils.list_dir_full_path(args.input_seg, interest_extensions=".npz", return_dict=True)
+    print(f"Removed {n} samples")
+    print(len(labels), len(images))
+# python remove_no_seg_images.py --input_img /home/aicvi/projects/Swin-MAE-datasets/images/ct_coronary/ --input_seg /home/aicvi/projects/Swin-MAE-datasets/labels/ct_coronary/
+# python remove_no_seg_images.py --input_img /home/aicvi/projects/Swin-MAE-datasets/images/mri_mm --input_seg /home/aicvi/projects/Swin-MAE-datasets/labels/mri_mm
