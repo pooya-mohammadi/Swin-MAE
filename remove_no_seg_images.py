@@ -18,7 +18,7 @@ args = parser.parse_args()
 
 def check_seg(seg_files: dict[str, str]) -> dict[str, str]:
     output = dict()
-    for k, v in seg_files.items():
+    for k, v in tqdm(seg_files.items(), desc="Checking the segmentation:"):
         data = np.load(v)['arr_0']
         if len(np.unique(data)) == 1:
             os.remove(v)
