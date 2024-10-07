@@ -28,3 +28,8 @@ ORCID-Numbers = {Sheng, Liu/0000-0002-5251-2767
 Unique-ID = {WOS:001012921200001},
 }
 ```
+
+# How to run:
+```commandline
+CUDA_VISIBLE_DEVICES=1 python train.py --save_freq 10 --num_workers 128 --batch_size 256 --epochs 100 --warmup_epochs 5 --output_dir output --log_dir output --data_path ../Swin-MAE-datasets/images
+```
