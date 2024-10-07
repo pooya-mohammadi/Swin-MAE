@@ -39,7 +39,7 @@ if __name__ == '__main__':
 
     images = DirUtils.list_dir_full_path(args.input_img, interest_extensions=".jpg", return_dict=True)
     labels = DirUtils.list_dir_full_path(args.input_seg, interest_extensions=".npz", return_dict=True)
-    print(f"Removed {n} samples")
+    print(f"Removed {n} empty samples")
     print(len(labels), len(images))
 
     # Remove images that don't have the same shape as label
