@@ -40,7 +40,7 @@ parser.add_argument("--n", default=None, type=int)
 #                                                                     current_extension=".nii.gz")))
 
 
-def save_npz_func(img_path, output_dir, save_jpg: bool = False, rotate: bool = False):
+def save_npz_func(img_path, output_dir, save_jpg: bool = False, rotate: bool = False, save_npz: bool = False):
     filename = split(img_path)[-1].replace(".nii.gz", "")
     img_arr = NIBUtils.get_array(img_path)
     os.makedirs(output_dir, exist_ok=True)
@@ -48,7 +48,8 @@ def save_npz_func(img_path, output_dir, save_jpg: bool = False, rotate: bool = F
         img_slice = img_arr[..., index]
         if rotate:
             img_slice = ndimage.rotate(img_slice, 90)
-        np.savez(join(output_dir, f"{filename}_{index:04}.npz"), img_slice)
+        if save_npz:
+            np.savez(join(output_dir, f"{filename}_{index:04}.npz"), img_slice)
         if save_jpg:
             img = Image.fromarray((img_slice / img_arr.max() * 255).astype(np.uint8), mode='L')
             img.save(os.path.join(output_dir, f"{filename}_{index:04}.jpg"))
@@ -58,9 +59,9 @@ def process(filepath, save_npz, save_jpg, rotate, pick):
     filename = split(filepath)[-1].replace(".nii.gz", "").replace("_0000", "")
     output_dir_path = join(args.output, filename)
 
-    if save_npz:
-        save_npz_func(filepath, output_dir_path, save_jpg=save_jpg, rotate=rotate)
-        ext = ".npz"
+    if save_npz or save_jpg:
+        save_npz_func(filepath, output_dir_path, save_jpg=save_jpg, rotate=rotate, save_npz=save_npz)
+        ext = ".npz" if save_npz else ".jpg"
     else:
         os.system(f"med2image -i {filepath} -d {output_dir_path}")
         ext = ".jpg"
@@ -78,20 +79,20 @@ def process(filepath, save_npz, save_jpg, rotate, pick):
             continue
         shutil.move(img_path, join(args.output, f"{filename}_{index:04}{ext}"))
 
-    if save_npz and save_jpg:  # This is for testing segmentation!
-        ext = ".jpg"
-        for index, img_path in enumerate(DirUtils.list_dir_full_path(output_dir_path, interest_extensions=ext)):
-            if index not in name_space:
-                os.remove(img_path)
-                continue
-            shutil.move(img_path, join(args.output, f"{filename}_{index:04}{ext}"))
+    # if save_jpg:  # This is for testing segmentation!
+    #     ext = ".jpg"
+    #     for index, img_path in enumerate(DirUtils.list_dir_full_path(output_dir_path, interest_extensions=ext)):
+    #         if index not in name_space:
+    #             os.remove(img_path)
+    #             continue
+    #         shutil.move(img_path, join(args.output, f"{filename}_{index:04}{ext}"))
     shutil.rmtree(output_dir_path)
 
 
 if __name__ == '__main__':
     args = parser.parse_args()
     DirUtils.remove_create(args.output)
-    Parallel(n_jobs=os.cpu_count() - 2)(
+    Parallel(n_jobs=os.cpu_count() - 3)(
         delayed(process)(filepath, args.save_npz, args.save_jpg, args.rotate, args.pick) for filepath in
         tqdm(DirUtils.list_dir_full_path(args.input, interest_extensions=".gz")[:args.n]))
 

@@ -12,6 +12,7 @@ from deep_utils import NIBUtils
 parser = ArgumentParser()
 parser.add_argument("--input_img", default="/home/aicvi/projects/Swin-MAE-datasets/images/ct_coronary/")
 parser.add_argument("--input_seg", default="/home/aicvi/projects/Swin-MAE-datasets/labels/ct_coronary/")
+parser.add_argument("--remove_empty", action="store_true", default="If set will remove segments without target")
 
 args = parser.parse_args()
 
@@ -30,7 +31,10 @@ def check_seg(seg_files: dict[str, str]) -> dict[str, str]:
 if __name__ == '__main__':
     images = DirUtils.list_dir_full_path(args.input_img, interest_extensions=".jpg", return_dict=True)
     labels = DirUtils.list_dir_full_path(args.input_seg, interest_extensions=".npz", return_dict=True)
-    labels = check_seg(labels)
+
+    if args.remove_empty:
+        labels = check_seg(labels)
+
     n = 0
     for i_k, i_v in tqdm(images.items(), desc="Removing non existing images"):
         if i_k not in labels:
@@ -57,5 +61,6 @@ if __name__ == '__main__':
     labels = DirUtils.list_dir_full_path(args.input_seg, interest_extensions=".npz", return_dict=True)
     print(f"Removed {n} samples")
     print(len(labels), len(images))
+
 # python remove_no_seg_images.py --input_img /home/aicvi/projects/Swin-MAE-datasets/images/ct_coronary/ --input_seg /home/aicvi/projects/Swin-MAE-datasets/labels/ct_coronary/
 # python remove_no_seg_images.py --input_img /home/aicvi/projects/Swin-MAE-datasets/images/mri_mm --input_seg /home/aicvi/projects/Swin-MAE-datasets/labels/mri_mm
