@@ -81,15 +81,14 @@ def run_one_image(x, model):
 
 if __name__ == '__main__':
     # 读取图像
-    img_root = r'D:\文件\数据集\腮腺对比学习数据集\三通道合并\concat\临时取出'
-    img_name = r'135_6_l.png'
-    img = Image.open(os.path.join(img_root, img_name))
+    img_path = "/home/aicvi/Downloads/12083964_0000.jpg"
+    img = Image.open(img_path)
     img = img.resize((224, 224))
     img = np.asarray(img) / 255.
     assert img.shape == (224, 224, 3)
 
     # 读取模型
-    chkpt_dir = r'output_dir\checkpoint-400.pth'
+    chkpt_dir = r'output/checkpoint-100.pth'
     model_mae = prepare_model(chkpt_dir, 'swin_mae')
     print('Model loaded.')
 
